@@ -1,0 +1,113 @@
+package com.t0lia.gof.creational.builder;
+
+import org.testng.annotations.Test;
+
+/**
+ * {@link java.lang.StringBuilder}
+ * <p>
+ * Шаблон строитель хороший выбор для проектирования классов, в которых статические методы генерации или конструкторы
+ * имеют большое число параметров, в особенности если параметры необязательны. Код клиента намного проще читать и
+ * писать с использованием Builder нежели чем традиционных конструктором и Builder более безопасны чем JavaBean.
+ * <p>
+ * <pre class="code">
+ * _____________________________________________________________________________
+ * _________|<i>JavaBeans</i> | <i>Telescoping constructor</i> | <i>Builder</i>|
+ * _________|-----------------|--------------------------------|---------------|
+ * Verbose__|-----------------|--------------------------------|---------------|
+ * Safety___|-----------------|--------------------------------|---------------|
+ * _________|------------------------------------------------------------------|
+ * </pre>
+ * <p>
+ * <strong>Pros:</strong>
+ * <ol>
+ * <li>Позволяет удобно конструировать объекты с множеством необязательных параметров (альтернатива массивным конструкторам и javabean подходу), гибко управлять этими параметрами </li>
+ * <li>Позволяет отложить публикацию объекта, избежать неконсистентности, возможность создавать immutable реализации</li>
+ * <li>Могут использоваться для конструирования множества объектов</li>
+ * <li>Можно использовать vararg</li>
+ * <li>Можно автоматически устанавливать параметры (билдеры с предустановлеными параметрами, по сути, являются фабрикой)</li>
+ * <li>Билдер функциональный интерфейс. Его можно параметризовать с помощью generic</li>
+ * </ol>
+ *
+ * <pre class="code"><code class="java">
+ *  // A builder for objects of type T
+ *  public interface Builder<T> {
+ *      public T build();
+ *  }
+ * </code></pre>
+ *
+ * <strong>Cons:</strong>
+ * <ol>
+ * <li>Создание дополнительного объекта</li>
+ * <li>Нецелесообразно использовать с небольшим количеством параметров (<=4)</li>
+ * </ol>
+ *
+ *
+ * -
+ * <p>
+ * <pre class="code"><code class="java">
+ * Coffee americano  = new Coffee.Builder(2).water(3).build();
+ * </code></pre>
+ * <p>
+ * <strong>Books</strong>
+ * <ul><li>Effective Java, Joshua Bloch</li><li>Design Pattern, GOF</li></ul>
+ * <string>Родственные шаблоны</string>
+ * <ul><li>{@link com.t0lia.gof.creational.builder.Coffee.Builder}</li></ul>
+ * <strong>Improvements</strong>
+ *
+ * <strong>JDK examples:</strong>
+ * <ul><li>{@link java.lang.StringBuilder}</li></ul>
+ *
+ * ---
+ * @author t0lia
+ * @see java.lang.StringBuilder
+ */
+class Coffee {
+    private final int espresso;
+    private final int milk;
+    private final int foamedMilk;
+    private final int water;
+
+    public static class Builder {
+        // required fields
+        private final int espresso;
+
+        // optional fields
+        private int milk       = 0;
+        private int foamedMilk = 0;
+        private int water      = 0;
+
+        public Coffee build() { return new Coffee(this); }
+
+        public Builder(int espresso) { this.espresso = espresso; }
+
+        public Builder foamedMilk(int foamedMilk) { this.foamedMilk = foamedMilk; return this; }
+        public Builder water(int water)           { this.water = water; return this; }
+        public Builder milk(int milk)             { this.milk = milk; return this; }
+    }
+
+    @Override
+        public String toString() {
+            return "espresso: " + espresso + ", water: " + water + ", milk: " + milk + ", foamed milk: " + foamedMilk + ";";
+        }
+
+    private Coffee(Builder builder) {
+        this.foamedMilk = builder.foamedMilk;
+        this.espresso   = builder.espresso;
+        this.water      = builder.water;
+        this.milk       = builder.milk;
+    }
+}
+
+public class Builder {
+    @Test public void test() {
+        Coffee americano  = new Coffee.Builder(2).water(3).build();
+        Coffee espresso   = new Coffee.Builder(1).build();
+        Coffee cappuccino = new Coffee.Builder(2).milk(2).foamedMilk(2).build();
+        Coffee latte      = new Coffee.Builder(2).milk(10).build();
+
+        System.out.println("americano recipe:  " + americano);
+        System.out.println("espresso recipe:   " + espresso);
+        System.out.println("cappuccino recipe: " + cappuccino);
+        System.out.println("latte recipe:      " + latte);
+    }
+}
